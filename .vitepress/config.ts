@@ -21,6 +21,8 @@ export default defineConfig({
                     { text: 'Cross-Subdomain SSO', link: '/guide/sso-sessions' },
                     { text: 'make:subdomain Command', link: '/guide/make-subdomain-command' },
                     { text: 'Theming', link: '/guide/theming' },
+                    { text: 'Error Pages', link: '/guide/error-pages' },
+                    { text: 'Maintenance Mode', link: '/guide/maintenance-mode' },
                 ],
             },
             {

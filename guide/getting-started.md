@@ -37,4 +37,6 @@ Point all of these at your app in Herd/Valet/your hosts file, then visit `auth.y
 - Want users to stay logged in across portals? See [Cross-Subdomain SSO](/guide/sso-sessions).
 - Adding your own portal? See the [make:subdomain command](/guide/make-subdomain-command).
 - Rebranding colors or the square "edge design" look? See [Theming](/guide/theming).
+- Branded 404/500/etc pages per portal? See [Error Pages](/guide/error-pages).
+- Taking a portal down for maintenance? See [Maintenance Mode](/guide/maintenance-mode).
 - Explore what each portal actually does: [Auth](/portals/auth), [Account](/portals/account), [Backoffice](/portals/backoffice).

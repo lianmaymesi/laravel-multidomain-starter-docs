@@ -12,3 +12,7 @@ Unauthenticated by default — no middleware applied to this group in `routes/we
 ## What's on the page
 
 Unlike the [App portal's](/portals/app) dashboard, this content is written for the starter kit itself rather than being generic placeholder copy — a hero, and a 4-card feature grid covering domain-based routing, the `make:subdomain` command, Livewire, and Flux UI theming. Sign-in/create-account buttons only show if the `login`/`register` routes exist. Swap this out for your own product's marketing page.
+
+## Error & maintenance pages
+
+Landing is the one portal that ships its own error/maintenance design out of the box (`resources/views/errors/landing/page.blade.php`) instead of sharing the auth/app/backoffice/account set — edit that file directly to restyle it, independently of the shared one. See [Error Pages](/guide/error-pages).

@@ -30,3 +30,7 @@ Backed by `spatie/laravel-permission`. Three Livewire pages:
 Any role whose name matches a portal/subdomain key (`app`, `backoffice`, `account`, `auth`, `landing`, `api`, or any custom portal added via [`make:subdomain`](/guide/make-subdomain-command)) **can't be deleted** from this screen. `User::redirect()` reads a user's role names against `config('multidomain.sub_domains')` to decide which portal sends them home after login — deleting one of these roles would silently break that routing for anyone holding it.
 
 Seed a baseline with `database/seeders/AdminUserSeeder.php`, which creates a `Super Admin` role with every permission attached.
+
+## Maintenance
+
+**Maintenance** (`/maintenance`) — take any portal down for visitors with a branded maintenance page, independently of the others. Backoffice itself can't be toggled from here — it's always exempt (see [Maintenance Mode](/guide/maintenance-mode)). If `APP_MAINTENANCE` is set in the environment, a banner explains that it currently overrides every toggle on the page, backoffice included.

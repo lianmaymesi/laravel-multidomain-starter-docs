@@ -13,8 +13,9 @@ The name must be lowercase alphanumeric with hyphens (e.g. `blog`, `partner-port
 - **Who should be able to access this portal?** — `open` (no login required) or `auth`.
 - **Access level** (only if `auth`) — the portal's own role (recommended: a `blog` role, gated by `portal:blog`), `user` (same gate as `app`), or `staff` (same gate as `backoffice`).
 - **Should visitors be able to sign up for this portal themselves, from the public register page?** — if yes, asks for a label (e.g. "Blog Writer") to show on the sign-up form.
+- **Error & maintenance page style for this portal?** — `shared` (reuse the common auth/app/backoffice/account design, the default), `landing` (reuse landing's), or `own` (scaffold a fresh, blank page to customize). See [Error Pages](/guide/error-pages).
 
-The access answers decide the middleware written into the generated route file. The self-registration answer decides whether a 5th manual step (below) is printed.
+The access answers decide the middleware written into the generated route file. The self-registration answer decides whether a manual step (below) is printed for `registerable_portals`. The page-style answer decides whether an error page file is scaffolded, and whether a manual step is printed for `page_style` (skipped when you pick `shared`, since that's already the default for anything not listed).
 
 ## What it creates
 
@@ -25,6 +26,12 @@ resources/views/layouts/blog.blade.php
 resources/views/pages/blog/⚡dashboard/dashboard.php
 resources/views/pages/blog/⚡dashboard/dashboard.blade.php
 routes/blog.php
+```
+
+Plus, only if you picked `own` for the error/maintenance page style:
+
+```
+resources/views/errors/blog/page.blade.php
 ```
 
 Plus a `blog` role (via `spatie/laravel-permission`), created immediately so it's ready to assign — protected from deletion in the backoffice roles screen, since `User::redirect()` uses role names to decide which portal to send a user to after login (see [Backoffice](/portals/backoffice)).
@@ -40,6 +47,7 @@ It won't rewrite `config/multidomain.php` or `routes/web.php` for you. Editing P
 3. Add blog.<APP_MAIN_DOMAIN> to your local hosts/Herd config
 4. Assign the "blog" role to any user who should access this portal and be redirected here after login.
 5. (only if self-registration was enabled) Add 'blog' => 'Blog Writer' to config/multidomain.php registerable_portals array
+6. (only if page style isn't "shared") Add 'blog' => '<style>' to config/multidomain.php page_style array
 ```
 
 `vite.config.js` needs no edit — it picks up new `resources/css/*` and `resources/js/*` entries automatically.
@@ -61,5 +69,6 @@ Templates live in `stubs/subdomain/` at the project root:
 | `layout.stub`                             | `resources/views/layouts/{name}.blade.php`                                |
 | `route.stub`                              | `routes/{name}.php`                                                       |
 | `dashboard.stub` / `dashboard.blade.stub` | the starter Livewire dashboard page                                       |
+| `error-page.stub`                         | `resources/views/errors/{name}/page.blade.php` — only when `own` style is picked |
 
 Edit these stubs to change what every newly scaffolded portal looks like.

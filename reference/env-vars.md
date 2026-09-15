@@ -7,6 +7,7 @@
 | `APP_MAIN_DOMAIN` | `localhost` | Base domain (e.g. `yourapp.test`) |
 | `APP_SINGLE_DOMAIN` | `false` | Collapse all portals onto one host |
 | `SESSION_DOMAIN` | `null` | Shared session cookie domain for SSO, e.g. `.yourapp.test`. Leave `null` in single-domain mode |
+| `APP_MAINTENANCE` | `false` | Global maintenance kill switch — takes down every portal, backoffice included. See [Maintenance Mode](/guide/maintenance-mode) |
 
 ## Demo auth feature
 

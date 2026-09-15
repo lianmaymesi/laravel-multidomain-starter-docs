@@ -8,6 +8,16 @@
 | `single_domain` | `APP_SINGLE_DOMAIN` | `false` | Collapse all portals onto `main_domain` — see [Single vs Multi Domain](/guide/single-vs-multi-domain) |
 | `sub_domains` | — | derived | Array of portal key → resolved domain (`app`, `backoffice`, `landing`, `account`, `auth`, `api`) |
 | `registerable_portals` | — | `[]` | Portal roles a visitor can self-select on the public register page — see [make:subdomain § self-registration](/guide/make-subdomain-command#self-registration) |
+| `page_style` | — | see below | Which error/maintenance page design each portal renders — see [Error Pages](/guide/error-pages) |
+
+## `config/maintenance.php`
+
+| Key | Env | Default | Purpose |
+|---|---|---|---|
+| `global` | `APP_MAINTENANCE` | `false` | Absolute kill switch — every portal, backoffice included, shows the maintenance page |
+| `exempt_portals` | — | `['backoffice']` | Portals never affected by the per-portal DB toggle (overridden by `global` above) |
+
+See [Maintenance Mode](/guide/maintenance-mode) for the full picture.
 
 ## Demo auth settings (`config/multidomain.php`)
 
