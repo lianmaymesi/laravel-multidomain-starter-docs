@@ -3,9 +3,15 @@
 Two independent layers, both rendering the same branded maintenance page (see [Error Pages](/guide/error-pages) — it's dispatched the same way, with `"maintenance"` as the pseudo status code):
 
 1. **Global env switch** — `APP_MAINTENANCE`. An absolute kill switch: every portal, **backoffice included**, shows the maintenance page. No CLI access required, just flip the env var and deploy.
-2. **Per-portal toggle** — controlled from Backoffice → Maintenance. Staff can take any single portal down (landing, app, account, auth, or any custom stub) without touching the others. **Backoffice can never be put into maintenance this way** — staff always need a way in.
+2. **Per-portal toggle** — controlled from Backoffice → Maintenance. Staff can take any single independent portal down (landing, app, or any custom stub) without touching the others.
 
-The global switch overrides everything, including the backoffice exemption above — if `APP_MAINTENANCE=true`, backoffice is down too.
+Four portals never appear in that per-portal list — `maintenance.exempt_portals` — for two different reasons:
+
+- **`backoffice`** — staff always need a way in to flip things back.
+- **`account` and `auth`** — supportive portals for app/backoffice/any user-facing portal, not independent destinations of their own. Taking one down in isolation would just strand users mid-login or mid-account-task on whichever portal sent them there.
+- **`api`** — not a UI portal at all; there's nothing for a maintenance page to render.
+
+The global switch overrides every exemption above — if `APP_MAINTENANCE=true`, all four go down too.
 
 ```
                     APP_MAINTENANCE=true?
@@ -14,7 +20,8 @@ The global switch overrides everything, including the backoffice exemption above
                 yes                    no
                  │                      │
       EVERY portal down       portal in exempt_portals?
-      (backoffice included)    (backoffice, by default)
+   (backoffice/account/auth/   (backoffice, account,
+       api included)              auth, api)
                                         │
                              ┌──────────┴──────────┐
                             yes                     no
@@ -42,7 +49,7 @@ Config lives in `config/maintenance.php`:
 
 ```php
 'global' => (bool) env('APP_MAINTENANCE', false),
-'exempt_portals' => ['backoffice'],
+'exempt_portals' => ['backoffice', 'account', 'auth', 'api'],
 ```
 
 ## Per-portal toggle (Backoffice → Maintenance)
