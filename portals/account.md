@@ -58,6 +58,12 @@ Triggered from the [Profile](#profile) page, re-entering your password.
 - **Manage** — once enabled, this page lets you view/hide recovery codes, regenerate a fresh set (invalidating the old ones), reconfigure (new QR code), or disable 2FA entirely.
 - Recovery codes are consumed permanently once used at the [2FA challenge](/portals/auth#two-factor-authentication) during login.
 
+## Preferred language
+
+`/settings` → `pages::accounts.settings`
+
+Only shown once 2+ languages are active (see [Localization & RTL](/guide/localization)). Whatever you pick here is authoritative on `app`, `account`, and `backoffice` from then on — it overrides everything else, including `?lang=` if you happen to have it in the URL, and there's no switcher on those three portals for exactly that reason. Saving redirects (full page load, not a Livewire SPA swap) so `<html dir>` and everything else baked into the initial render picks up the change immediately.
+
 ## Scheduled cleanup
 
 Two jobs run daily (`routes/console.php`), no setup needed beyond a working queue + scheduler:

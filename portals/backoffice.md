@@ -30,3 +30,11 @@ Seeded automatically by `database/seeders/RolePermissionSeeder.php`: a locked **
 ## Maintenance
 
 **Maintenance** (`/maintenance`) — take any portal down for visitors with a branded maintenance page, independently of the others. Backoffice itself can't be toggled from here — it's always exempt (see [Maintenance Mode](/guide/maintenance-mode)). If `APP_MAINTENANCE` is set in the environment, a banner explains that it currently overrides every toggle on the page, backoffice included.
+
+## Languages, Translations & Settings
+
+Full details on [Localization & RTL](/guide/localization). Summary:
+
+- **Languages** (`/languages`) — add/reorder/activate languages, set direction (ltr/rtl) and which one is primary. Super-Admin-only.
+- **Translations** (`/translations`, `/translations/portal`, `/translations/common`) — database overrides for hardcoded strings and validation messages, split into landing/portal/common scopes with independent permissions.
+- **Settings** (`/settings`) — the app-wide URL mode toggle (path prefix vs `?lang=` query string). Super-Admin-only.

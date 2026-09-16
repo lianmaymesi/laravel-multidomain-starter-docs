@@ -100,6 +100,10 @@ See the [Account portal](/portals/account#two-factor-authentication) for setting
 | `multidomain.email_verification_grace_days` | `EMAIL_VERIFICATION_GRACE_DAYS` | `7` | Days before unverified email hard-blocks access |
 | `multidomain.registerable_portals` | — | `[]` | Portals a visitor can self-select on the register page |
 
+## Language switcher
+
+A floating switcher (top corner, since this portal's pages have no shared header chrome) — same rules as [Landing](/portals/landing#language-switcher). See [Localization & RTL](/guide/localization).
+
 ## Portal redirect
 
 Already-authenticated users hitting this subdomain get redirected to their portal by `App\Http\Middleware\RedirectIfAuthenticated` (the `guest` middleware alias), which checks phone verification state and then calls `$user->redirect()` — see [Config Reference](/reference/config) for how that maps roles to portals.
