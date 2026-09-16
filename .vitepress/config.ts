@@ -20,6 +20,7 @@ export default defineConfig({
                     { text: 'Single vs Multi Domain', link: '/guide/single-vs-multi-domain' },
                     { text: 'Cross-Subdomain SSO', link: '/guide/sso-sessions' },
                     { text: 'make:subdomain Command', link: '/guide/make-subdomain-command' },
+                    { text: 'Roles & Permissions', link: '/guide/roles-and-permissions' },
                     { text: 'Theming', link: '/guide/theming' },
                     { text: 'Error Pages', link: '/guide/error-pages' },
                     { text: 'Maintenance Mode', link: '/guide/maintenance-mode' },

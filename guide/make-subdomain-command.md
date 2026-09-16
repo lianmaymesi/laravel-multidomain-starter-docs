@@ -34,7 +34,7 @@ Plus, only if you picked `own` for the error/maintenance page style:
 resources/views/errors/blog/page.blade.php
 ```
 
-Plus a `blog` role (via `spatie/laravel-permission`), created immediately so it's ready to assign — protected from deletion in the backoffice roles screen, since `User::redirect()` uses role names to decide which portal to send a user to after login (see [Backoffice](/portals/backoffice)).
+Plus a role (via `spatie/laravel-permission`) with `slug` set to `blog` and `name` set to the Title Case `Blog`, created immediately so it's ready to assign — only Super Admin can edit or delete it in the backoffice roles screen, since `User::redirect()` and the `portal:{slug}` middleware match on the role's `slug` to decide which portal to send a user to after login (see [Roles & Permissions](/guide/roles-and-permissions) and [Backoffice](/portals/backoffice)).
 
 ## What it doesn't do
 

@@ -19,17 +19,13 @@ Real counts, not a placeholder — total users, staff count, role count, permiss
 
 ## Roles & permissions
 
-Backed by `spatie/laravel-permission`. Three Livewire pages:
+Backed by `spatie/laravel-permission`, gated per-page and per-action by real permissions (not just `portal:staff`). Full details, including the two locked system roles and the `slug`/`name` split on portal roles, live on the dedicated [Roles & Permissions](/guide/roles-and-permissions) page. Summary:
 
-- **Roles** (`/roles`) — create/edit/delete roles, each with a permission checklist. Shows user-count and permission-count per role.
-- **Permissions** (`/permissions`) — simple name-only CRUD.
+- **Roles** (`/roles`) — create/edit/delete roles; permission assignment lives on its own page (`/roles/{role}/permissions`) with grouped, autosaving toggles.
+- **Permissions** (`/permissions`) — simple name-only CRUD, Super-Admin-only.
 - **Users** (`/users`) — searchable, paginated user list; assign roles per user via a checklist.
 
-### Protected roles
-
-Any role whose name matches a portal/subdomain key (`app`, `backoffice`, `account`, `auth`, `landing`, `api`, or any custom portal added via [`make:subdomain`](/guide/make-subdomain-command)) **can't be deleted** from this screen. `User::redirect()` reads a user's role names against `config('multidomain.sub_domains')` to decide which portal sends them home after login — deleting one of these roles would silently break that routing for anyone holding it.
-
-Seed a baseline with `database/seeders/AdminUserSeeder.php`, which creates a `Super Admin` role with every permission attached.
+Seeded automatically by `database/seeders/RolePermissionSeeder.php`: a locked **Super Admin** role (bypasses every permission check via `Gate::before`) and a locked **Admin** role (everything except managing Permissions and touching portal/system roles). `database/seeders/AdminUserSeeder.php` then creates the initial staff user and assigns it Super Admin.
 
 ## Maintenance
 
