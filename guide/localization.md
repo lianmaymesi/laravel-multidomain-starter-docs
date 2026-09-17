@@ -55,7 +55,7 @@ All of this lives in `App\Http\Middleware\SetLocale`, appended globally in `boot
 
 ## URL mode (Backoffice → Settings)
 
-Two mutually-exclusive URL styles, picked from `/settings` (`languages.edit` permission, same Super-Admin-only gate as the Languages page), backed by `App\Models\LocaleSetting` (a single-row table):
+Two mutually-exclusive URL styles, picked from `/settings` (`languages.edit` permission, same Super-Admin-only gate as the Languages page), backed by `App\Models\AppSetting` — a generic key/value table (`app_settings`: `key`, `value`) for app-wide settings in general, not just this one. `url_mode` is just one key in it (`AppSetting::urlMode()` / `isPathMode()` / `isQueryMode()`); the [default timezone](#timezones) is another. Add new global settings the same way — `AppSetting::get()`/`set()` — rather than a new dedicated table per setting.
 
 | Mode | Shape | Notes |
 |---|---|---|
@@ -67,6 +67,25 @@ Only one is ever honored — switching modes doesn't leave the other one silentl
 ## Switcher component
 
 `<x-locale-switcher />` — standalone, not wired into every layout by design. Self-hides under 2 active languages. Included on `landing` and `auth` (header/floating corner respectively); deliberately **not** on `app`/`account`/`backoffice` (see [above](#app-account-backoffice)). Drop it into your own views wherever a guest-facing page needs manual language control.
+
+## Timezones
+
+Storage stays UTC everywhere (`config('app.timezone')` is never touched) — conversion only ever happens at display time, through a `Carbon::macro('forUser')` registered in `AppServiceProvider::boot()`:
+
+```php
+$user->created_at->forUser()->translatedFormat('l, d F Y H:i')
+```
+
+`forUser()` resolves through `App\Services\TimezoneService::current()`: the given user's `users.timezone` column, falling back to the app-wide default (`AppSetting::defaultTimezone()`, itself falling back to `config('app.timezone')` if never set) if the user hasn't picked one, or if there's no signed-in user at all.
+
+- **Global default** — Backoffice → Settings (`settings.edit` permission), a plain timezone identifier picked from `DateTimeZone::listIdentifiers()`.
+- **Per-user override** — Account → Settings, next to Preferred language. Always shown (unlike the language card, which needs 2+ active languages) — a timezone preference is useful even on a single-language install.
+
+No trait, no per-model opt-in — the macro attaches to every `Carbon`/`CarbonImmutable` instance in the app for free, the same way `now()` or a model's date cast already does.
+
+### Date translation
+
+`Carbon::setLocale()` is kept in sync with the active language in `SetLocale` middleware, right after `LaravelLocalization::setLocale()`. That's the entire mechanism — `translatedFormat()` and `diffForHumans()` already localize month/day names and relative phrasing ("2 days ago") once Carbon's locale matches, for any locale Carbon ships translations for (`ar`, `ta`, `te`, and ~280 others — check `vendor/nesbot/carbon/src/Carbon/Lang/`). This is calendar-agnostic: dates render in the Gregorian calendar with translated text, not converted to Hijri/Buddhist/other calendar systems — that's a different, unimplemented feature.
 
 ## Translations (Backoffice → Translations)
 
@@ -80,6 +99,58 @@ Rows live in `App\Models\LanguageLine` (extends the package's model), with one a
 | Portal | `/translations/portal` | `translations.portal` | Assignable to Admin — app/account/backoffice-only copy |
 | Common | `/translations/common` | `translations.common` | **Super-Admin-only** — words reused across every scope, so editing them affects landing and portal wording at once |
 
-Each scope is a real route (not a client-side tab), 404s on an unknown scope, 403s if you lack that scope's permission, and defaults to your first permitted scope if you land on `/translations` without one. The page has key/value search (`wire:model.live.debounce.300ms`, same pattern as the Users page) — it's a substring match against the raw JSON `text` column, not a precise per-locale lookup.
+Each scope is a real route (not a client-side tab), 404s on an unknown scope, 403s if you lack that scope's permission, and defaults to your first permitted scope if you land on `/translations` without one. Each scope tab shows its own row count as a badge. The page has key/value search (`wire:model.live.debounce.300ms`, same pattern as the Users page) — it's a substring match against the raw JSON `text` column, not a precise per-locale lookup.
 
-Adding a line: pick **Text** (Laravel's flat `__()` group, `*`) or **Validation** (overrides a validator message like `required` or `custom.email.required`), type the key exactly as it appears in code, fill in whichever active languages you want to override.
+Adding a line by hand: pick **Text** (Laravel's flat `__()` group, `*`) or **Validation** (overrides a validator message like `required` or `custom.email.required`), type the key exactly as it appears in code, fill in a value for whichever language is currently selected (see below).
+
+The **Translations** nav item itself only appears once 2+ languages are active — same rule as the switcher (`LanguageService::isMultiLanguageEnabled()`), since there's nothing to translate *to* with just one.
+
+### Editing: one language at a time
+
+Rather than one input per active language crammed into each row, the page has a single **language switcher** (a row of buttons reading "Editing language: English · العربية · …") that drives every line at once — pick a language, every line's textarea shows (and saves) only that language's value. This scales to any number of active languages without the row layout getting wider, and it means a translator who only reads Arabic never has to see (or risk touching) any other language's field.
+
+- The textarea is `flux:textarea rows="auto" resize="none"` — grows with content via the CSS `field-sizing: content` property, no JS needed (falls back to a normal fixed-height scrollable textarea on browsers that don't support it yet).
+- The key itself doubles as the English reference text (see [placeholder protection](#placeholder-protection) below for why English is never actually blank), so there's no separate "English" box to keep in sync unless English happens to be one of the active languages, in which case it appears as an ordinary tab in the switcher.
+
+### Placeholder protection
+
+Every `:token`-shaped substring in a line's key (`App\Models\LanguageLine::extractPlaceholders()`) is shown as an amber badge next to the key, and enforced server-side on save: `TranslationsPage::save()`/`addLine()` diff the required tokens against whatever the translator typed for the currently-selected language, and reject the save with an inline error if any are missing. This exists because a translator working purely in the text box has no way to know `:name` is a code token rather than literal words to translate away — rather than trying to lock the character range client-side (fragile, and this Flux tier has no rich-text/masked-input primitive to do it cleanly), the badge tells them what must survive and the save-time check catches it if it doesn't.
+
+### English is always seeded
+
+Regardless of which language is marked **primary** (see [Languages](#languages-backoffice-languages) above), English is treated as the one language that's never left blank:
+
+- `TranslationScannerService::sync()` seeds `text.en` with the literal key on every string it creates.
+- `addLine()` does the same for the **Text** group if you don't supply an English value yourself.
+
+This matters because the key literally *is* the English string — leaving it unseeded looks like "English translation missing" in the **Missing translations** card for something that was never actually missing.
+
+### Analytics cards & auto-sync
+
+Four cards sit above the scope tabs, computed page-wide (not scoped to the current tab):
+
+| Card | Meaning |
+|---|---|
+| **Total strings** | `LanguageLine::count()` — every row across every scope |
+| **Missing translations** | Rows missing a value for at least one *active* language |
+| **Active languages** | `LanguageService::activeCodes()` count |
+| **Pending sync** | `__('...')` calls found in the codebase with no matching row yet — "Sync now" button, or "Up to date" once it's 0 |
+
+`App\Services\TranslationScannerService` does the scanning: it walks every file under `app/` and `resources/views/` whose extension is `php` — `SplFileInfo::getExtension()` returns everything after the *last* dot, so this matches both `.php` and `.blade.php` in one filter — regex-matching literal `__('...')`/`__("...")` calls. Dynamic keys (`__($variable)`) can't be scanned and are skipped, same as any static-analysis based scanner. Each found string is deduped and tagged with a scope by **directory**, first match wins:
+
+- `resources/views/pages/{landing,auth}/**`, `layouts/{landing,auth}.blade.php` → **landing**
+- `resources/views/pages/{app,account,backoffice}/**`, `layouts/{app,accounts,backoffice}.blade.php` → **portal**
+- Everything else (`app/`, shared `resources/views/components`, `resources/views/livewire`, etc.) → **common**
+
+Clicking **Sync now** creates a `LanguageLine` (group `*`, `text.en` seeded — see [below](#english-is-always-seeded)) for every pending string whose scope you're allowed to edit — an Admin without the `translations.common` permission will sync their landing/portal strings but leave any pending `common` ones for a Super Admin. Nothing is ever overwritten or deleted by a sync; it only fills in rows that don't exist yet, so admins are still free to translate them afterward from the normal per-line editor.
+
+### Machine translation (Google Translate, optional)
+
+A **"Translate with Google"** button sits next to the language switcher — only shown when both are true:
+
+- A Google Translate API key is configured (Backoffice → Settings → "Google Translate API key" — a `secret`-type field, see [Currency & Money](/guide/currency) for how the Settings page's field types work; the key is encrypted at rest via `Crypt::encryptString()` and never round-tripped back into the page).
+- The currently-selected language isn't English — there's nothing to translate English *to* from itself, so the button simply never appears while editing it.
+
+Clicking it is entirely the admin's choice — nothing runs automatically. `App\Services\GoogleTranslateService::translateMany()` sends every pending (still-blank) string in the current scope to Google's Cloud Translation API v2 in a single batched request, then each result goes through the exact same [placeholder check](#placeholder-protection) a manual save does — a translation that dropped a `:token` is **skipped**, not saved, so a bad machine translation can never silently break a string. Existing (human) translations are never overwritten; this only ever fills in blanks.
+
+Need a key? Backoffice → Settings shows a link straight to the [Google Cloud Console credentials page](https://console.cloud.google.com/apis/credentials) next to the field — enable the Cloud Translation API on your project first, then create an API key.

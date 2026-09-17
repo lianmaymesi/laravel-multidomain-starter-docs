@@ -23,6 +23,7 @@ export default defineConfig({
                     { text: 'Roles & Permissions', link: '/guide/roles-and-permissions' },
                     { text: 'Activity Log', link: '/guide/activity-log' },
                     { text: 'Localization & RTL', link: '/guide/localization' },
+                    { text: 'Currency & Money', link: '/guide/currency' },
                     { text: 'Theming', link: '/guide/theming' },
                     { text: 'Error Pages', link: '/guide/error-pages' },
                     { text: 'Maintenance Mode', link: '/guide/maintenance-mode' },

@@ -78,18 +78,18 @@ The Super Admin role itself is invisible to everyone except Super Admin users: h
 All permissions use a `module.action` dot-case convention, defined once in `RolePermissionSeeder::PERMISSIONS`:
 
 ```
-maintenance.view          maintenance.update
+maintenance.view          maintenance.update          settings.edit
 roles.view                roles.create               roles.edit
 roles.delete              roles.assign-permissions
 permissions.view          permissions.create          permissions.edit
 permissions.delete
 users.view                users.assign-roles
 languages.view            languages.create            languages.edit
-languages.delete
+languages.delete          currencies.view
 translations.landing      translations.portal          translations.common
 ```
 
-`languages.*` and `translations.common` are Super-Admin-only, same mechanism as `permissions.*` above (added to `RolePermissionSeeder::ADMIN_EXCLUDED_PERMISSIONS`). `translations.landing`/`translations.portal` are ordinary permissions Admin can hold. See [Localization & RTL](/guide/localization) for what each one gates.
+`languages.*` and `translations.common` are Super-Admin-only, same mechanism as `permissions.*` above (added to `RolePermissionSeeder::ADMIN_EXCLUDED_PERMISSIONS`). `translations.landing`/`translations.portal`, `settings.edit` (the backoffice Settings page — timezone, Google Translate key, and which currencies are active/primary), and `currencies.view` (the read-only Currencies reference page) are ordinary permissions Admin can hold. See [Localization & RTL](/guide/localization) and [Currency & Money](/guide/currency) for what each one gates.
 
 Each backoffice page checks its own module's abilities on mount and on every mutating action (`abort_unless(Gate::allows('roles.edit'), 403)`, etc.), and the sidebar nav (`resources/views/layouts/backoffice.blade.php`) wraps each link in `@can(...)` so a user never sees a link to a page they can't open.
 

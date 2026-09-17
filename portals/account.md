@@ -64,6 +64,10 @@ Triggered from the [Profile](#profile) page, re-entering your password.
 
 Only shown once 2+ languages are active (see [Localization & RTL](/guide/localization)). Whatever you pick here is authoritative on `app`, `account`, and `backoffice` from then on — it overrides everything else, including `?lang=` if you happen to have it in the URL, and there's no switcher on those three portals for exactly that reason. Saving redirects (full page load, not a Livewire SPA swap) so `<html dir>` and everything else baked into the initial render picks up the change immediately.
 
+## Timezone
+
+Same `/settings` page, its own card — always shown (not gated behind anything, unlike Preferred language). Picks a `users.timezone` value used to display every date/time you see across the app in your local time instead of the server's UTC storage; falls back to the backoffice's global default timezone if left unset. See [Localization & RTL → Timezones](/guide/localization#timezones) for how conversion works under the hood. Saving here just flashes a status message — no redirect needed, since it doesn't affect anything baked into the initial render the way locale does.
+
 ## Scheduled cleanup
 
 Two jobs run daily (`routes/console.php`), no setup needed beyond a working queue + scheduler:
